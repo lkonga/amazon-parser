@@ -4,11 +4,13 @@
 # @Author: hyan15
 # @Email: qwang16@olivetuniversity.edu
 
+import html
 import json
 import re
 
 from parsel import Selector
 from six.moves.html_parser import HTMLParser
+
 
 class DetailParser(object):
     def __init__(self, text, type='html', namespaces=None, root=None, base_url=None):
@@ -73,12 +75,14 @@ class DetailParser(object):
         return [s.strip().replace(u'\xa0', ' ') for s in raw_bullets if s and not s.isspace()]
 
     def parse_book_description(self):
-        noscript_elems = self.selector.xpath('//*[@id="bookDescription_feature_div"]/noscript')
+        noscript_elems = self.selector.xpath(
+            '//*[@id="bookDescription_feature_div"]/noscript')
         return ''.join([s.strip() for s in noscript_elems.xpath('.//text()').getall()])
 
     def parse_product_description(self):
         try:
-            des = self.selector.xpath('//*[@id="productDescription"]/p//text()').getall()
+            des = self.selector.xpath(
+                '//*[@id="productDescription"]/p//text()').getall()
             product_description = ''.join([s.strip() for s in des])
         except:
             trace
@@ -87,8 +91,24 @@ class DetailParser(object):
         return product_description
 
     def parse_images(self):
+        # Additional code to parse the image from the provided HTML code
+        images = []
+        script_elem = self.selector.xpath(
+            '//script[contains(text(), "ImageBlockATF")]/text()').get()
+        if script_elem:
+            match = re.search(
+                r"'colorImages': { 'initial': (\[.*\])},\s*'colorToAsin'", script_elem, re.DOTALL)
+            if match:
+                color_images_data = json.loads(match.group(1))
+                for img_data in color_images_data:
+                    if 'large' in img_data:
+                        images.append(img_data['large'])
+        return images
+
+    def parse_images_thumbs(self):
         thumb_urls = []
 
+        # Existing code to parse thumbnail images
         bottom_thumb_elems = self.selector.xpath(
             '//*[@id="imageBlockThumbs"]//div[contains(@class, "imageThumb")]/img')
         bottom_thumb_urls = bottom_thumb_elems.xpath('./@src').getall()
@@ -103,7 +123,7 @@ class DetailParser(object):
             front_img_data = self.selector.xpath(
                 '//img[@id="imgBlkFront"]/@data-a-dynamic-image').get()
             if front_img_data:
-                front_img_data = self.html_parser.unescape(front_img_data)
+                front_img_data = html.unescape(front_img_data)
                 try:
                     front_img_dict = json.loads(front_img_data)
                     thumb_urls.extend(list(front_img_dict.keys()))
@@ -127,7 +147,8 @@ class DetailParser(object):
         reviews_str = self.selector.xpath(
             '//*[@id="acrCustomerReviewText"]/text()').get()
         try:
-            reviews = int(re.sub(r'[^0-9]', '', reviews_str.strip().split().pop(0)))
+            reviews = int(
+                re.sub(r'[^0-9]', '', reviews_str.strip().split().pop(0)))
         except:
             pass
 
@@ -144,7 +165,7 @@ class DetailParser(object):
             if key == 'Format':
                 value = details_elem.xpath('./a/text()').get()
             elif key == 'Other Editions' or key == 'Weitere Ausgaben' or \
-                key.find('Autres versions') != -1:
+                    key.find('Autres versions') != -1:
                 value = ' | '.join(details_elem.xpath('./a/text()').getall())
             else:
                 value = details_elem.xpath('./text()').get()
@@ -155,10 +176,11 @@ class DetailParser(object):
         details_elems = self.selector.xpath(
             '//*[@id="detailBullets_feature_div"]/ul/li/span[@class="a-list-item"]')
         for details_elem in details_elems:
-            key = details_elem.xpath('./span[@class="a-text-bold"]/text()').get()
+            key = details_elem.xpath(
+                './span[@class="a-text-bold"]/text()').get()
             key = key.strip().strip(':') if key else ''
             value = details_elem.xpath(
-                    './span[not(@class="a-text-bold")]/text()').get()
+                './span[not(@class="a-text-bold")]/text()').get()
             value = value.strip() if value else ''
             if key and value:
                 details[key] = value
@@ -173,9 +195,11 @@ class DetailParser(object):
             if key and value:
                 details[key] = value
 
-        details_elems = self.selector.xpath('//div[@id="prodDetails"]//table//tr')
+        details_elems = self.selector.xpath(
+            '//div[@id="prodDetails"]//table//tr')
         for details_elem in details_elems:
-            key = details_elem.xpath('./th[contains(@class, "prodDetSectionEntry")]/text()').get()
+            key = details_elem.xpath(
+                './th[contains(@class, "prodDetSectionEntry")]/text()').get()
             key = key.strip().strip(':') if key else ''
             value = details_elem.xpath('./td/text()').get()
             value = value.strip() if value else ''
@@ -203,7 +227,7 @@ class DetailParser(object):
             key = details_elem.xpath('./b/text()').get()
             key = key.strip().strip(':') if key else ''
             if key == 'Other Editions' or key == 'Weitere Ausgaben' or \
-                key.find('Autres versions') != -1:
+                    key.find('Autres versions') != -1:
                 value = ' | '.join(details_elem.xpath('./a/text()').getall())
             else:
                 value = ''.join(details_elem.xpath('./text()').getall())
@@ -230,7 +254,7 @@ class DetailParser(object):
 
         for k in [
             'Amazon Bestsellers Rank', 'Amazon Best Sellers Rank',
-            'Average Customer Review', 'Customer Reviews']:
+                'Average Customer Review', 'Customer Reviews']:
             if k in details:
                 details.pop(k)
 
@@ -267,7 +291,8 @@ class DetailParser(object):
         except IndexError:
             pass
         for category_wrapper in category_wrappers:
-            categories.append('>'.join(category_wrapper.xpath('./a/text()').getall()))
+            categories.append(
+                '>'.join(category_wrapper.xpath('./a/text()').getall()))
 
         return ';'.join(categories)
 
@@ -280,7 +305,8 @@ class DetailParser(object):
             sales_rank_str = raw_sales_rank_str.strip()
         if sales_rank_str:
             try:
-                rank = int(re.sub(r'[#,\.]', '', sales_rank_str.replace('Nr. ', '').split().pop(0)))
+                rank = int(re.sub(r'[#,\.]', '', sales_rank_str.replace(
+                    'Nr. ', '').split().pop(0)))
             except:
                 rank = 0
         else:
@@ -300,6 +326,7 @@ class DetailParser(object):
 
         return rank
 
+
 class OfferListingParser(object):
     def __init__(self, text, type='html', namespaces=None, root=None, base_url=None):
         self.selector = Selector(
@@ -314,22 +341,27 @@ class OfferListingParser(object):
         }
         offer_elems = self.selector.xpath(
             './/div[@id="olpOfferList"]//div[contains(@class, "olpOffer")]')
+        offer_elems = self.selector.xpath(
+            './/div[contains(@class, "a-section")]')
+        offer_elems = self.selector.xpath(
+            './/div[contains(@class, "a-section aok-hidden twister-plus-buying-options-price-data")]')
         for offer_elem in offer_elems:
             offer = {
                 'price': self.parse_price(offer_elem),
-                'shipping_price': self.parse_shipping_price(offer_elem),
-                'condition_comments': self.parse_condition_comments(offer_elem),
-                'available': self.parse_availability(offer_elem),
-                'prime': self.parse_prime(offer_elem),
-                'expected_shipping': self.parse_expected_shipping(offer_elem),
-                'seller_name': self.parse_seller_name(offer_elem),
-                'seller_id': self.parse_seller_id(offer_elem),
-                'seller_rating': self.parse_seller_rating(offer_elem),
-                'seller_feedbacks': self.parse_seller_feedbacks(offer_elem),
-                'seller_stars': self.parse_seller_stars(offer_elem),
-                'offer_listing_id': self.parse_offer_listing_id(offer_elem)
+                # 'shipping_price': self.parse_shipping_price(offer_elem),
+                # 'condition_comments': self.parse_condition_comments(offer_elem),
+                # 'available': self.parse_availability(offer_elem),
+                # 'prime': self.parse_prime(offer_elem),
+                # 'expected_shipping': self.parse_expected_shipping(offer_elem),
+                # 'seller_name': self.parse_seller_name(offer_elem),
+                # 'seller_id': self.parse_seller_id(offer_elem),
+                # 'seller_rating': self.parse_seller_rating(offer_elem),
+                # 'seller_feedbacks': self.parse_seller_feedbacks(offer_elem),
+                # 'seller_stars': self.parse_seller_stars(offer_elem),
+                # 'offer_listing_id': self.parse_offer_listing_id(offer_elem)
             }
-            offer['condition'], offer['subcondition'] = self.parse_condition(offer_elem)
+            # offer['condition'], offer['subcondition'] = self.parse_condition(
+            #     offer_elem)
             offer_listing['offers'].append(offer)
 
         return offer_listing
@@ -354,7 +386,8 @@ class OfferListingParser(object):
         if reviews_elem:
             reviews_str = reviews_elem.xpath('./text()').get().strip()
             try:
-                reviews = int(re.sub(r'[^0-9]', '', reviews_str.split().pop(0)))
+                reviews = int(
+                    re.sub(r'[^0-9]', '', reviews_str.split().pop(0)))
             except:
                 reviews = 0
         else:
@@ -365,19 +398,21 @@ class OfferListingParser(object):
     def parse_price(self, offer_elem):
         price = 0
 
-        price_str = offer_elem.xpath(
-            './div[contains(@class, "olpPriceColumn")]/span[contains(@class, "olpOfferPrice")]/text()').get()
-        if price_str:
-            price_str = re.sub(r'[^0-9\.]', '', price_str.strip().replace(',', '.'))
-            dot_cnt = price_str.count('.')
-            if dot_cnt > 1:
-                price_parts = price_str.split('.')
-                last_part = price_parts.pop()
-                first_part = ''.join(price_parts)
-                price_str = '.'.join([first_part, last_part])
-            price = float(price_str)
+        price_json_str = offer_elem.xpath('./text()').get()
+        if price_json_str:
+            price_json = json.loads(price_json_str)
+            price_str = price_json.get('desktop_buybox_group_1', [{}])[
+                0].get('displayPrice', '')
+            price_str = re.sub(
+                r'[^0-9\.]', '', price_str.strip().replace(',', '.'))
+            if price_str:  # Check if price_str is not an empty string
+                price = float(price_str)
+            else:
+                print(
+                    f"Price string is empty for offer_elem: {offer_elem.get()}")
         else:
-            raise RuntimeError('Could not find price element')
+            print(
+                f"Could not find price element in offer_elem: {offer_elem.get()}")
 
         return price
 
@@ -436,7 +471,8 @@ class OfferListingParser(object):
                 sub_condition = condition_elem.xpath(
                     './span[@id="offerSubCondition"]/text()').get().strip()
             else:
-                conditions = [part.strip() for part in condition_str.split('-')]
+                conditions = [part.strip()
+                              for part in condition_str.split('-')]
                 if len(conditions) > 1:
                     condition = conditions.pop(0)
                     sub_condition = conditions.pop(0)
@@ -455,7 +491,8 @@ class OfferListingParser(object):
             comments_wrappers = comments_elem.xpath('.//div')
             if len(comments_wrappers) > 0:
                 comment_strs = comments_wrappers.xpath('./text()').getall()
-                comments = ''.join([comment_str.strip() for comment_str in comment_strs])
+                comments = ''.join([comment_str.strip()
+                                   for comment_str in comment_strs])
             else:
                 comments = comments_elem.xpath('./text()').get().strip()
 
@@ -467,7 +504,8 @@ class OfferListingParser(object):
         availability_elem = offer_elem.xpath(
             './olpAvailability').get()
         if availability_elem:
-            availability_str = availability_elem.xpath('./text()').get().strip()
+            availability_str = availability_elem.xpath(
+                './text()').get().strip()
             if availability_str:
                 available = False
 
@@ -542,10 +580,13 @@ class OfferListingParser(object):
             './div[contains(@class, "olpSellerColumn")]/p')
         if seller_desc_elem:
             raw_seller_descs = seller_desc_elem.xpath('./text()').getall()
-            seller_desc = ''.join([raw_seller_desc.strip() for raw_seller_desc in raw_seller_descs])
+            seller_desc = ''.join([raw_seller_desc.strip()
+                                  for raw_seller_desc in raw_seller_descs])
             if seller_desc:
-                matched_feedback = re.match(r'.*\(([0-9\.,]+) total ratings\)', seller_desc)
-                raw_feedbacks_str = matched_feedback.groups()[0] if matched_feedback and len(matched_feedback.groups()) > 0 else '0'
+                matched_feedback = re.match(
+                    r'.*\(([0-9\.,]+) total ratings\)', seller_desc)
+                raw_feedbacks_str = matched_feedback.groups()[0] if matched_feedback and len(
+                    matched_feedback.groups()) > 0 else '0'
                 feedbacks = int(raw_feedbacks_str.replace(',', ''))
             else:
                 feedbacks = 0
