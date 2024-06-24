@@ -48,3 +48,4 @@ ENV/
 .DS_Store
 
 tests/pages/
+amazon-parser/pages_html_output
