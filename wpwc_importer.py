@@ -111,8 +111,13 @@ product_data = {
     ],
     'images': [{'id': id} for id in image_ids]
 }
-if os.getenv('ENV') == 'prod':
-    subprocess.run(['wp', 'wc', 'product', 'create', '--user=admin', '--porcelain',
-                   '--format=json', '--data=' + json.dumps(product_data)], check=True)
-else:
-    print(product_data)
+# Create the wp wc command
+wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--porcelain',
+                 '--format=json', '--data=' + json.dumps(product_data)]
+
+# Print the command for manual execution
+print(' '.join(wp_wc_command))
+
+# Optionally run the command
+if os.getenv('ENV') == 'prod' and os.getenv('RUN_WP_WC_COMMAND', 'false') == 'true':
+    subprocess.run(wp_wc_command, check=True)
