@@ -3,6 +3,9 @@ import os
 import random
 import subprocess
 
+# Get the value of the 'ENV' environment variable
+ENV = os.getenv('ENV')
+
 
 def parse_product_data(input_string):
     # Load the JSON string into a Python dictionary
@@ -10,12 +13,6 @@ def parse_product_data(input_string):
 
     return product_data
 
-
-# Ask the user to enter the debug mode
-debug_mode = input("Enter debug mode? (yes/no): ").lower() == "yes"
-
-# Ask the user to run the wp wc command
-run_wp_wc_command = input("Run wp wc command? (yes/no): ").lower() == "yes"
 
 # Get a list of all JSON files in the directory
 files = [f for f in os.listdir('pages_html_output') if f.endswith('.json')]
@@ -37,7 +34,7 @@ for file in files:
         title = 'image_' + product_data['title'].replace(' ', '_')
 
         # Download the image
-        if debug_mode:
+        if ENV == 'dev':
             subprocess.run(['wget', '-P', './', image], check=True)
         else:
             subprocess.run(
@@ -47,7 +44,7 @@ for file in files:
         filename = image.split('/')[-1]
 
         # Import the image into WordPress
-        if debug_mode:
+        if ENV == 'dev':
             result = """
             --2024-06-23 14:59:13--  https://m.media-amazon.com/images/I/81Kb5TVBQvL._SX425_.jpg
             Resolving m.media-amazon.com (m.media-amazon.com)... 2600:9000:2368:9400:1d:d7f6:39d3:d9e1, 2600:9000:2368:dc00:1d:d7f6:39d3:d9e1, 2600:9000:2368:b400:1d:d7f6:39d3:d9e1, ...
@@ -69,8 +66,8 @@ for file in files:
             result = subprocess.run(
                 ['wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
 
-            # If debug mode is on, print the entire output and ID line
-            if debug_mode:
+            # If ENV is 'dev', print the entire output and ID line
+            if ENV == 'dev':
                 print(f'Output: {result.stdout}')
                 id_line = [line for line in result.stdout.split(
                     '\n') if line.strip()][-2]
@@ -112,17 +109,17 @@ for file in files:
     wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--name="' + product_data['name'] + '"', '--type=' + product_data['type'], '--regular_price=' +
                      str(product_data['regular_price']), '--description="' + product_data['description'] + '"', '--short_description="' + product_data['short_description'] + '"', '--categories=\'' + json.dumps(product_data['categories']) + '\'', '--images=\'' + json.dumps(product_data['images']) + '\'']
 
-    # If debug mode is on, print the command for manual execution
-    if debug_mode:
+    # If ENV is 'dev', print the command for manual execution
+    if ENV == 'dev':
         print(' '.join(wp_wc_command))
 
-    # If debug mode is on, ask for confirmation before running the command
-    if debug_mode:
+    # If ENV is 'dev', ask for confirmation before running the command
+    if ENV == 'dev':
         confirm = input(
             "Do you want to run this command? (yes/no): ").lower() == "yes"
         if not confirm:
             continue
 
-    # Optionally run the command
-    if run_wp_wc_command:
+    # Run the command if ENV is 'prod'
+    if ENV == 'prod':
         subprocess.run(wp_wc_command, check=True)
