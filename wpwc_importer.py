@@ -14,6 +14,12 @@ def parse_product_data(input_string):
     return product_data
 
 
+# Ask the user to enter the debug mode
+debug_mode = input("Enter debug mode? (yes/no): ").lower() == "yes"
+
+# Ask the user to run the wp wc command
+run_wp_wc_command = input("Run wp wc command? (yes/no): ").lower() == "yes"
+
 # Get a list of all JSON files in the directory
 files = [f for f in os.listdir('pages_html_output') if f.endswith('.json')]
 
@@ -34,7 +40,7 @@ for file in files:
         title = 'image_' + product_data['title'].replace(' ', '_')
 
         # Download the image
-        if ENV == 'dev':
+        if debug_mode:
             subprocess.run(['wget', '-P', './', image], check=True)
         else:
             subprocess.run(
@@ -66,14 +72,12 @@ for file in files:
             result = subprocess.run(
                 ['wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
 
-            # If ENV is 'dev', print the entire output and ID line
-            if ENV == 'dev':
+            # If debug mode is on, print the entire output and ID line
+            if debug_mode:
                 print(f'Output: {result.stdout}')
-
             id_line = [line for line in result.stdout.split(
                 '\n') if line.strip()][-2]
-
-            if ENV == 'dev':
+            if debug_mode:
                 print(f'id line: {id_line}')
 
             # Extract the ID from the id_line
@@ -112,8 +116,8 @@ for file in files:
     wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--name="' + product_data['name'] + '"', '--type=' + product_data['type'], '--regular_price=' +
                      str(product_data['regular_price']), '--description="' + product_data['description'] + '"', '--short_description="' + product_data['short_description'] + '"', '--categories=\'' + json.dumps(product_data['categories']) + '\'', '--images=\'' + json.dumps(product_data['images']) + '\'']
 
-    # If ENV is 'dev', print the command for manual execution
-    if ENV == 'dev':
+    # If debug mode is on, print the command for manual execution
+    if debug_mode:
         print(' '.join(wp_wc_command))
 
     # If ENV is 'dev', ask for confirmation before running the command
