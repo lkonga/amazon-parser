@@ -130,3 +130,5 @@ for file in files:
     # Run the command if ENV is 'prod'
     if ENV == 'prod':
         subprocess.run(wp_wc_command, check=True)
+    else:
+        print("Not running the command, not in prod ENV")
