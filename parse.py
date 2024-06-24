@@ -2,6 +2,7 @@
 
 import sys
 import json
+import os
 from amazon_page_parser.parsers import DetailParser
 from amazon_page_parser.parsers import OfferListingParser
 
@@ -39,7 +40,17 @@ def parse_page(page_path):
     data = {k: escape_control_characters(v) if isinstance(
         v, str) else v for k, v in data.items()}
 
-    print(json.dumps(data, indent=4, ensure_ascii=True))
+    return data
 
 
-parse_page(sys.argv[1])
+# Get a list of all files in the directory
+files = os.listdir('pages_html_output')
+
+# Loop over each file
+for file in files:
+    # Parse the page and get the data
+    data = parse_page(f'pages_html_output/{file}')
+
+    # Write the data to a JSON file
+    with open(f'pages_html_output/{os.path.splitext(file)[0]}.json', 'w') as f:
+        json.dump(data, f, indent=4, ensure_ascii=True)
