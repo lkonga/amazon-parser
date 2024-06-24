@@ -57,7 +57,7 @@ for image in product_data['images']:
         subprocess.run(['wget', '-P', './', image], check=True)
     else:
         subprocess.run(
-            ['wget', '-P', '/home/hestia/amazon_images', image], check=True)
+            ['wget', '-P', '/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images', image], check=True)
 
     # Get the filename of the image
     filename = image.split('/')[-1]
@@ -70,20 +70,20 @@ for image in product_data['images']:
         Connecting to m.media-amazon.com (m.media-amazon.com)|2600:9000:2368:9400:1d:d7f6:39d3:d9e1|:443... connected.
         HTTP request sent, awaiting response... 200 OK
         Length: 37158 (36K) [image/jpeg]
-        Saving to: ‘/home/hestia/amazon_images/81Kb5TVBQvL._SX425_.jpg’
+        Saving to: ‘/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/81Kb5TVBQvL._SX425_.jpg’
 
         81Kb5TVBQvL._SX425_.jpg                 100%[=============================================================================>]  36.29K  --.-KB/s    in 0.001s
 
-        2024-06-23 14:59:13 (46.0 MB/s) - ‘/home/hestia/amazon_images/81Kb5TVBQvL._SX425_.jpg’ saved [37158/37158]
+        2024-06-23 14:59:13 (46.0 MB/s) - ‘/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/81Kb5TVBQvL._SX425_.jpg’ saved [37158/37158]
 
-        Imported file '/home/hestia/amazon_images/81Kb5TVBQvL._SX425_.jpg' as attachment ID 97.
+        Imported file '/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/81Kb5TVBQvL._SX425_.jpg' as attachment ID 97.
         """
         # Split the result into lines, remove empty lines, and get the last line
         id_line = [line for line in result.split('\n') if line.strip()][-1]
         print(f'id line: {id_line}')
     else:
         result = subprocess.run(
-            ['wp', 'media', 'import', f'/home/hestia/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
+            ['wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
         # Split the result into lines, remove empty lines, and get the last line
         id_line = [line for line in result.stdout.split(
             '\n') if line.strip()][-1]
