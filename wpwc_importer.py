@@ -114,8 +114,7 @@ for file in files:
 
     # Create the wp wc command
     wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--name="' + product_data['name'] + '"', '--type=' + product_data['type'], '--regular_price=' +
-                     str(product_data['regular_price']), '--description="' + product_data['description'] + '"', '--short_description="' + product_data['short_description'] + '"', '--categories=\'' + json.dumps(product_data['categories']) + '\'', '--images=\'' + json.dumps(product_data['images']) + '\'']
-
+                     str(product_data['regular_price']), '--description="' + product_data['description'] + '"', '--short_description="' + product_data['short_description'] + '"', '--categories=' + json.dumps(product_data['categories']), '--images=' + json.dumps(product_data['images'])]
     # If debug mode is on, print the command for manual execution
     if debug_mode:
         print(' '.join(wp_wc_command))
