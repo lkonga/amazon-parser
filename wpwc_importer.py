@@ -105,7 +105,7 @@ product_data = {
     'short_description': '',
     'categories': [
             {
-                'id': 9,  # You'll need to get the ID of the category you want to use
+                'id': 22,  # You'll need to get the ID of the category you want to use
                 'name': 'Products'  # Use the category name "Products"
             }
     ],
