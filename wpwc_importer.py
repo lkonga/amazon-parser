@@ -112,8 +112,8 @@ product_data = {
     'images': [{'id': id} for id in image_ids]
 }
 # Create the wp wc command
-wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--porcelain',
-                 '--format=json', '--data=' + json.dumps(product_data)]
+wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--name=' + product_data['name'], '--type=' + product_data['type'], '--regular_price=' +
+                 str(product_data['regular_price']), '--description=' + product_data['description'], '--short_description=' + product_data['short_description'], '--categories=' + json.dumps(product_data['categories'])]
 
 # Print the command for manual execution
 print(' '.join(wp_wc_command))
