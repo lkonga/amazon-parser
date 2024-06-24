@@ -84,13 +84,18 @@ for image in product_data['images']:
     else:
         result = subprocess.run(
             ['wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
+
         # Print the entire output
         print(f'Output: {result.stdout}')
 
-        # Split the result into lines, remove empty lines, and get the last line
+        # Split the result into lines, remove empty lines, and get the second last line
         id_line = [line for line in result.stdout.split(
-            '\n') if line.strip()][-1]
+            '\n') if line.strip()][-2]
         print(f'id line: {id_line}')
+
+        # Extract the ID from the id_line
+        image_id = id_line.split(' ')[-1]
+        print(f'image id: {image_id}')
 
     # Get the ID of the imported image
     image_id = id_line.split(' ')[-1]
