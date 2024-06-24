@@ -84,6 +84,9 @@ for image in product_data['images']:
     else:
         result = subprocess.run(
             ['wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
+        # Print the entire output
+        print(f'Output: {result.stdout}')
+
         # Split the result into lines, remove empty lines, and get the last line
         id_line = [line for line in result.stdout.split(
             '\n') if line.strip()][-1]
