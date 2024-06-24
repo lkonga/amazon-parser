@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import subprocess
 
 
@@ -119,6 +120,12 @@ product_data = {
     ],
     'images': [{'id': id} for id in image_ids]
 }
+
+# Generate a random factor between 8.5 and 9.5
+factor = random.uniform(8.5, 9.5)
+# Multiply the price by the factor
+product_data['regular_price'] *= factor
+
 # Create the wp wc command
 wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--name="' + product_data['name'] + '"', '--type=' + product_data['type'], '--regular_price=' +
                  str(product_data['regular_price']), '--description="' + product_data['description'] + '"', '--short_description="' + product_data['short_description'] + '"', '--categories=\'' + json.dumps(product_data['categories']) + '\'', '--images=\'' + json.dumps(product_data['images']) + '\'']
