@@ -123,8 +123,8 @@ product_data = {
 
 # Generate a random factor between 8.5 and 9.5
 factor = random.uniform(8.5, 9.5)
-# Multiply the price by the factor
-product_data['regular_price'] *= factor
+# Multiply the price by the factor and round the result
+product_data['regular_price'] = round(product_data['regular_price'] * factor)
 
 # Create the wp wc command
 wp_wc_command = ['wp', 'wc', 'product', 'create', '--user=admin', '--name="' + product_data['name'] + '"', '--type=' + product_data['type'], '--regular_price=' +
