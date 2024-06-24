@@ -40,7 +40,7 @@ for file in files:
         title = 'image_' + product_data['title'].replace(' ', '_')
 
         # Download the image
-        if debug_mode:
+        if ENV == 'dev':
             subprocess.run(['wget', '-P', './', image], check=True)
         else:
             subprocess.run(
