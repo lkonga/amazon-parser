@@ -70,7 +70,7 @@ for file in files:
             print(f'id line: {id_line}')
         else:
             import_image_command = [
-                'wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image']
+                'wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title="' + title + '"', '--featured_image']
             if debug_mode:
                 print(' '.join(import_image_command))
 
