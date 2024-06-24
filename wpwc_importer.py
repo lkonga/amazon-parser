@@ -69,8 +69,13 @@ for file in files:
             id_line = [line for line in result.split('\n') if line.strip()][-1]
             print(f'id line: {id_line}')
         else:
+            import_image_command = [
+                'wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image']
+            if debug_mode:
+                print(' '.join(import_image_command))
+
             result = subprocess.run(
-                ['wp', 'media', 'import', f'/home/hestia/web/newgiftonlineindia.store/public_html/amazon_images/{filename}', '--title=' + title, '--featured_image'], check=True, text=True, capture_output=True)
+                import_image_command, check=True, text=True, capture_output=True)
 
             # If debug mode is on, print the entire output and ID line
             if debug_mode:
