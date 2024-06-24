@@ -69,8 +69,11 @@ for file in files:
             # If ENV is 'dev', print the entire output and ID line
             if ENV == 'dev':
                 print(f'Output: {result.stdout}')
-                id_line = [line for line in result.stdout.split(
-                    '\n') if line.strip()][-2]
+
+            id_line = [line for line in result.stdout.split(
+                '\n') if line.strip()][-2]
+
+            if ENV == 'dev':
                 print(f'id line: {id_line}')
 
             # Extract the ID from the id_line
