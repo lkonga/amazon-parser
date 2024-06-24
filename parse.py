@@ -15,11 +15,14 @@ def parse_page(page_path):
 
     with open(page_path, 'r') as f:
         c = f.read()
+    try:
+        parser = DetailParser(c)
+        parser2 = OfferListingParser(c)
 
-    parser = DetailParser(c)
-    parser2 = OfferListingParser(c)
-
-    offer_listing = parser2.parse()
+        offer_listing = parser2.parse()
+    except Exception as e:
+        print(f"Error parsing file {file}: {str(e)}")
+        return None  # or however you want to handle this case
 
     data = dict(
         title=parser.parse_title(),
@@ -50,7 +53,9 @@ files = os.listdir('pages_html_output')
 for file in files:
     # Parse the page and get the data
     data = parse_page(f'pages_html_output/{file}')
-
-    # Write the data to a JSON file
-    with open(f'pages_html_output/{os.path.splitext(file)[0]}.json', 'w') as f:
-        json.dump(data, f, indent=4, ensure_ascii=True)
+    if data is not None and data['price'] is not None and data['price'] != 0:
+        # Write the data to a JSON file
+        with open(f'pages_html_output/{os.path.splitext(file)[0]}.json', 'w') as f:
+            json.dump(data, f, indent=4, ensure_ascii=True)
+    else:
+        print(f"Skipping file {file} due to missing or null price.")

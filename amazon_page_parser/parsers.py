@@ -345,6 +345,9 @@ class OfferListingParser(object):
             './/div[contains(@class, "a-section")]')
         offer_elems = self.selector.xpath(
             './/div[contains(@class, "a-section aok-hidden twister-plus-buying-options-price-data")]')
+        if not offer_elems:
+            offer_elems = self.selector.xpath(
+                './/li[contains(@class, "swatchSelect")]')
         for offer_elem in offer_elems:
             offer = {
                 'price': self.parse_price(offer_elem),
@@ -363,7 +366,6 @@ class OfferListingParser(object):
             # offer['condition'], offer['subcondition'] = self.parse_condition(
             #     offer_elem)
             offer_listing['offers'].append(offer)
-
         return offer_listing
 
     def parse_star(self):
@@ -397,7 +399,6 @@ class OfferListingParser(object):
 
     def parse_price(self, offer_elem):
         price = 0
-
         price_json_str = offer_elem.xpath('./text()').get()
         if price_json_str:
             price_json = json.loads(price_json_str)
@@ -407,13 +408,21 @@ class OfferListingParser(object):
                 r'[^0-9\.]', '', price_str.strip().replace(',', '.'))
             if price_str:  # Check if price_str is not an empty string
                 price = float(price_str)
+        if price == 0:  # Fallback method if price is None
+            price_str = offer_elem.xpath(
+                './/span[contains(@id, "_price")]/span/text()').get()
+            # Debugging print statement
+            print(f"Price string for fallback method: {price_str}")
+            if price_str:
+                # Extract price after $
+                price_str = re.search(r'\$(.*)', price_str).group(1)
+                price_str = re.sub(
+                    r'[^0-9\.]', '', price_str.strip().replace(',', '.'))
+                if price_str:  # Check if price_str is not an empty string
+                    price = float(price_str)
             else:
                 print(
-                    f"Price string is empty for offer_elem: {offer_elem.get()}")
-        else:
-            print(
-                f"Could not find price element in offer_elem: {offer_elem.get()}")
-
+                    f"Could not find price element in offer_elem: {offer_elem.get()}")
         return price
 
     def parse_shipping_price(self, offer_elem):
