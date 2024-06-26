@@ -104,8 +104,8 @@ for file in files:
         'short_description': '',
         'categories': [
                 {
-                    'id': 22,  # You'll need to get the ID of the category you want to use
-                    'name': 'Products'  # Use the category name "Products"
+                    'id': 20,  # You'll need to get the ID of the category you want to use
+                    'name': 'Accessories'  # Use the category name "Products"
                 }
         ],
         'images': [{'id': id} for id in image_ids]
